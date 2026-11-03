@@ -1,0 +1,78 @@
+GUIDE QUESTIONS
+
+1. What are the main differences between XMLHttpRequest and Fetch API?
+
+  Feature            | XMLHttpRequest                    | Fetch API
+  -------------------|-----------------------------------|----------------------------------
+  Style              | Event/callback-based              | Promise-based
+  Syntax             | Longer, needs many steps          | Shorter and cleaner
+  Success check      | readyState === 4 and status       | response.ok
+  Parsing JSON       | JSON.parse(xhr.responseText)      | response.json()
+  Error handling     | onerror / status checks           | .catch()
+  Chaining           | Hard (leads to nested callbacks)  | Easy (chain .then())
+  Age                | Older (legacy)                    | Modern standard (ES6)
+
+  Note: Fetch does NOT reject on HTTP errors like 404 or 500. It only rejects
+  on network failure, so response.ok must still be checked.
+
+
+2. Why is the Fetch API considered more modern and readable?
+
+  - It uses Promises, so there is no need for readyState checks or nested callbacks.
+  - The code is shorter. One fetch() call replaces new XMLHttpRequest(), open(),
+    onreadystatechange, and send().
+  - It reads top to bottom: fetch the data, then convert it, then use it.
+  - Errors are handled in one place using .catch().
+  - It works naturally with async/await.
+  - It is the current standard supported by all modern browsers.
+
+  Example:
+    fetch("https://jsonplaceholder.typicode.com/posts/1")
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.error("Error:", error));
+
+
+3. What is the purpose of the .then() and .catch() methods in Fetch?
+
+  .then()  - Runs when the Promise is fulfilled (the request succeeded). It
+             receives the result and can be chained.
+             First .then(): receives the Response object, usually calls
+             response.json() to convert it.
+             Second .then(): receives the converted data, where it is used
+             or displayed.
+
+  .catch() - Runs when the Promise is rejected, such as on a network failure
+             or when an error is thrown in the chain. It receives the error
+             so the program can handle it instead of crashing.
+
+  Example:
+    fetch(url)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error("HTTP error " + response.status);
+        }
+        return response.json();
+      })
+      .then(data => console.log(data))
+      .catch(error => console.error(error));
+
+
+4. What happens when you send a POST request to the placeholder API?
+
+  Example (JSONPlaceholder):
+    fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: "foo", body: "bar", userId: 1 })
+    })
+      .then(response => response.json())
+      .then(data => console.log(data));
+
+  What happens:
+  - The data in the body is sent to the server as JSON.
+  - The API responds with status 201 (Created).
+  - It returns the object you sent plus a new id (usually 101).
+    Example output: { title: "foo", body: "bar", userId: 1, id: 101 }
+  - The data is NOT actually saved. JSONPlaceholder is a fake API for testing,
+    so a GET request afterwards will not show the new post.
